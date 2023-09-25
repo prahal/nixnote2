@@ -1066,8 +1066,10 @@ void CommunicationManager::handleEDAMSystemException(EDAMSystemException e, QStr
     }
 
     if (e.errorCode == EDAMErrorCode::RATE_LIMIT_REACHED) {
-        this->minutesToNextSync = e.rateLimitDuration / 60 + 1;
-
+        // Delay until the end of the current wall clock hour, if rateLimitDuration
+        //  for the rate limit raeched exception is not set.
+        int secondsUntilNextWallClockHour = (60 - QTime::currentTime().minute()) * 60;
+        this->minutesToNextSync = e.rateLimitDuration.value(secondsUntilNextWallClockHour) / 60 + 1;
 
         string endOfText = "minute";
         if (this->minutesToNextSync > 1)
